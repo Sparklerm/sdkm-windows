@@ -4,13 +4,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"sdkm/jdk"
 	"sdkm/model"
 )
 
 const (
-	configFileName = "conf/config.json"
-	jdkVersionData = "conf/jdk_version.json"
+	configFileName = "\\conf\\config.json"
+	jdkVersionData = "\\conf\\jdk_version.json"
+	helpContent    = "sdkm ls # 列出已安装的JDK版本\r" +
+		"sdkm use <version> # 切换JDK版本\r" +
+		"sdkm install <version> # 安装指定版本的JDK\r" +
+		"sdkm remove <version> # 卸载指定版本的JDK\r" +
+		"sdkm available <jdk type> # 列出可用的JDK版本 "
 )
 
 func main() {
@@ -48,18 +54,26 @@ func main() {
 		jdk.Install(jdkTypes, version, config.JDKDir)
 	case "remove":
 		jdk.RemoveJdk(os.Args[2], config.JDKDir)
+	case "help":
+		fmt.Println(helpContent)
 	default:
-		fmt.Println("Unknown command. Supported commands: ls, use")
+		fmt.Println(helpContent)
 		os.Exit(1)
 	}
+}
+
+func exePath() string {
+	exePath, _ := os.Executable()
+	realExePath, _ := filepath.EvalSymlinks(exePath)
+	exeDir := filepath.Dir(realExePath)
+	return exeDir
 }
 
 // readConfig 从配置文件中读取配置信息
 func readConfig() (model.Config, error) {
 	config := model.Config{}
-
 	// 读取配置文件
-	file, err := os.Open(configFileName)
+	file, err := os.Open(exePath() + configFileName)
 	if err != nil {
 		return config, err
 	}
@@ -78,9 +92,8 @@ func readConfig() (model.Config, error) {
 // readConfig 从配置文件中读取配置信息
 func readJdkVersionConfig() ([]model.JdkType, error) {
 	var jdkTypes []model.JdkType
-
 	// 读取配置文件
-	file, err := os.Open(jdkVersionData)
+	file, err := os.Open(exePath() + jdkVersionData)
 	if err != nil {
 		return jdkTypes, err
 	}
