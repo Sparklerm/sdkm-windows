@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	ZULU_API = "https://api.azul.com/metadata/v1/zulu/packages/?java_version=%s&os=windows&latest=true&distro_version=%s&release_status=ga&availability_types=CA&certifications=tck&page=1&page_size=1"
+	ZULU_API = "https://api.azul.com/metadata/v1/zulu/packages/?java_version=%s&os=windows&arch=x64&archive_type=zip&java_package_type=jdk&latest=true&distro_version=%s&release_status=ga&certifications=tck&page=1&page_size=1"
 )
 
 func Install(jdkType []model.JdkType, version, destination string) {
@@ -60,7 +60,6 @@ func ListJdkVersions(jdkTypes []model.JdkType, version string) {
 		}
 		return
 	}
-
 	SearchGithubVersion(version)
 }
 

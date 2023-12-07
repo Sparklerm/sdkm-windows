@@ -60,9 +60,6 @@ func getJDKVersions(jdkDir string) ([]string, error) {
 	}
 
 	for _, entry := range entries {
-		//if entry.IsDir() && strings.HasPrefix(entry.Name(), "jdk") {
-		//	versions = append(versions, entry.Name())
-		//}
 		if entry.IsDir() {
 			versions = append(versions, entry.Name())
 		}
@@ -83,7 +80,9 @@ func isJDKVersionAvailable(jdkDir, version string) bool {
 // updateEnvironment 更新环境变量
 func updateEnvironment(envName, jdkPath string) error {
 	// 更新JDK环境变量
-	cmd := exec.Command("powershell", "-Command", fmt.Sprintf(`[System.Environment]::SetEnvironmentVariable("%s", "%s", [System.EnvironmentVariableTarget]::User)`, envName, jdkPath+"\\bin"))
+	cmd := exec.Command("powershell", "-Command", fmt.Sprintf(`[System.Environment]::SetEnvironmentVariable("%s", "%s", [System.EnvironmentVariableTarget]::User)`, envName, jdkPath))
+	// 修改系统环境变量：
+	// cmd := exec.Command("powershell", "-Command", fmt.Sprintf(`[System.Environment]::SetEnvironmentVariable("%s", "%s", [System.EnvironmentVariableTarget]::Machine)`, envName, jdkPath))
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
@@ -94,6 +93,8 @@ func updateEnvironment(envName, jdkPath string) error {
 func registerPath(envName string) {
 	// 获取当前环境变量 "PATH" 的值
 	path := exec.Command("powershell", "-Command", `[System.Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::User)`)
+	// 修改系统环境变量：
+	// path := exec.Command("powershell", "-Command", `[System.Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::Machine)`)
 	output, err := path.Output()
 	if err != nil {
 		fmt.Println("Error getting PATH environment variable:", err)
@@ -114,8 +115,8 @@ func registerPath(envName string) {
 	if currentPath[len(currentPath)-1] != ';' {
 		currentPath += ";"
 	}
-	newPath := currentPath + jdkEnv
-	pathUpdate := exec.Command("powershell", "-Command", fmt.Sprintf(`[System.Environment]::SetEnvironmentVariable("Path", "%s", [System.EnvironmentVariableTarget]::User)`, newPath))
+	newPath := currentPath + jdkEnv + "\\bin;"
+	pathUpdate := exec.Command("powershell", "-Command", fmt.Sprintf(`[System.Environment]::SetEnvironmentVariable("Path", "%s", [System.EnvironmentVariableTarget]::Machine)`, newPath))
 	pathUpdate.Stdout = os.Stdout
 	pathUpdate.Stderr = os.Stderr
 	pathUpdate.Run()
